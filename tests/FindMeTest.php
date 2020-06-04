@@ -13,6 +13,8 @@ final class FindMeTest extends TestCase
 
     private $findMeObject;
     
+    private $citiesInformation;
+    
     protected function setUp(): void
     {
         $propertyFile = __DIR__ . DS . '..' . DS . 'properties.xml';
@@ -24,7 +26,22 @@ final class FindMeTest extends TestCase
     
     private function getMyIp(): string
     {
+        // write your own IP
         return "177.89.53.143";
+    }
+    
+    private function readyCitiesInformation(): bool
+    {
+        try {
+            $file = fopen(__DIR__ . DS ."citiesinformation.csv", "r");
+            while (($fileContents = fgetcsv($file)) !== FALSE) {
+                $this->citiesInformation[] = $fileContents;
+            }
+            return true;
+        } catch (Exception $e) {
+            print($e);
+            return false;
+        }
     }
     
     public function testFindMyCountry()
@@ -32,5 +49,24 @@ final class FindMeTest extends TestCase
         $ip = $this->getMyIp();
         $this->findMeObject->setInformationFromIp($ip);
         $this->assertEquals("Brazil", $this->findMeObject->getCountryName());
+    }
+    
+    public function testDistanceToLatLon()
+    {
+        $ip = $this->getMyIp();
+        $this->findMeObject->setInformationFromIp($ip);
+        if ($this->readyCitiesInformation()) {
+            $cityIndex = -1;
+            for ($i = 0; $i < count($this->citiesInformation); $i++) {
+                if ($this->citiesInformation[$i][0] == "Rio Branco") {
+                    $cityIndex = $i;
+                    break;
+                }
+            }
+            $destinyLatitude = $this->citiesInformation[$cityIndex][2];
+            $destinyLongitude = $this->citiesInformation[$cityIndex][3];
+            $distance = $this->findMeObject->getDistanceTo((float)$destinyLatitude, (float)$destinyLongitude);
+            $this->assertEqualsWithDelta(3617, $distance, 30617*0.005, "Message is 30617 with distance $distance and error = " . (30617*0.0005));
+        }
     }
 }
