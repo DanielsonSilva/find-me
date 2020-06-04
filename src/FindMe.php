@@ -8,27 +8,54 @@ use Location\Distance\Haversine;
 
 class FindMe
 {
+    /**
+     * Api Key from IpStack
+     * @var string apiId
+     */
     private $apiId;
     
+    /**
+     * Store the ip string to search
+     * @var string ip
+     */
     private $ip;
     
+    /**
+     * All the information related to that Ip
+     * @var array info
+     */
     private $info;
     
+    /**
+     * Construct the object with an API Key
+     * @param string $apiId
+     */
     public function __construct(string $apiId)
     {
         $this->apiId = $apiId;
     }
     
+    /**
+     * Resets the object to search for another IP
+     */
     public function reset(): void
     {
         $this->info = null;
     }
     
+    /**
+     * Checks if the info is already loaded
+     * @return bool True if the info was loaded and False otherwise
+     */
     private function isInfoLoaded(): bool
     {
         return ($this->info != null);
     }
     
+    /**
+     * Load the information of that Ip
+     * @param string $ip IP to search for
+     */
     public function setInformationFromIp(string $ip): void
     {
         $addrService = "http://api.ipstack.com/$ip?access_key=$this->apiId";
@@ -36,11 +63,21 @@ class FindMe
         $this->info = json_decode($result);
     }
     
+    /**
+     * Get the property from the info by the name
+     * @param string $property Property to be searched for
+     * @return The property inside info
+     */
     private function getPropertyFromInfo($property)
     {
         return $this->info->$property;
     }
     
+    /**
+     * Get the property if that property exists
+     * @param string $property Property to search inside info
+     * @return NULL|string|float The property value if exist or NULL otherwise
+     */
     private function getPropertyIfExists($property)
     {
         $value = null;
@@ -50,6 +87,13 @@ class FindMe
         return $value;
     }
     
+    /**
+     * Get the distance from that IP location to another latitude and longitude
+     * using a mathematical approach
+     * @param float $latitude Destination latitude
+     * @param float $longitude Destination longitude
+     * @return int|NULL The distance if the info is loaded or NULL otherwise
+     */
     public function getDistanceTo($latitude, $longitude): ?int
     {
         $distance = null;
