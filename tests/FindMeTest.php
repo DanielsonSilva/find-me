@@ -66,7 +66,11 @@ final class FindMeTest extends TestCase
             $destinyLatitude = $this->citiesInformation[$cityIndex][2];
             $destinyLongitude = $this->citiesInformation[$cityIndex][3];
             $distance = $this->findMeObject->getDistanceTo((float)$destinyLatitude, (float)$destinyLongitude);
-            $this->assertEqualsWithDelta(3617, $distance, 30617*0.005, "Message is 30617 with distance $distance and error = " . (30617*0.0005));
+            $this->assertEqualsWithDelta(3617, $distance, 30617*0.005, "Excepcted:30617 | Calculated Normal: $distance | delta = " . (0.005*100) . '%(' . (30617*0.005) . ')');
+            $distance = $this->findMeObject->getDistanceToVicenty((float)$destinyLatitude, (float)$destinyLongitude)/1000;
+            $this->assertEqualsWithDelta(3617, $distance, 30617*0.005, "Excepcted:30617 | Calculated Vicenty: $distance | delta = " . (0.005*100) . '%(' . (30617*0.005) . ')');
+            $distance = $this->findMeObject->getDistanceToHaversine((float)$destinyLatitude, (float)$destinyLongitude)/1000;
+            $this->assertEqualsWithDelta(3617, $distance, 30617*0.005, "Excepcted:30617 | Calculated Haversine: $distance | delta = " . (0.005*100) . '%(' . (30617*0.005) . ')');
         }
     }
 }

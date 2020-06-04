@@ -2,6 +2,10 @@
 
 namespace danielsonsilva\FindMe;
 
+use Location\Coordinate;
+use Location\Distance\Vincenty;
+use Location\Distance\Haversine;
+
 class FindMe
 {
     private $apiId;
@@ -46,19 +50,50 @@ class FindMe
         return $value;
     }
     
-    public function getDistanceTo($latitude, $longitude): int
+    public function getDistanceTo($latitude, $longitude): ?int
     {
-        $lat1 = deg2rad($this->getLatitude());
-        $lon1 = deg2rad($this->getLongitude());
-        $lat2 = deg2rad($latitude);
-        $lon2 = deg2rad($longitude);
-        
-        $R = 6373.0;
-        $dlon = $lon2 - $lon1;
-        $dlat = $lat2 - $lat1;
-        $a = (sin($dlat/2))**2 + cos($lat1) * cos($lat2) * (sin($dlon/2))**2;
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        $distance = $R * $c;
+        $distance = null;
+        if ($this->isInfoLoaded()) {
+            $lat1 = deg2rad($this->getLatitude());
+            $lon1 = deg2rad($this->getLongitude());
+            $lat2 = deg2rad($latitude);
+            $lon2 = deg2rad($longitude);
+            
+            $R = 6373.0;
+            $dlon = $lon2 - $lon1;
+            $dlat = $lat2 - $lat1;
+            $a = (sin($dlat/2))**2 + cos($lat1) * cos($lat2) * (sin($dlon/2))**2;
+            $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+            $distance = floor($R * $c);
+        }
+        return $distance;
+    }
+    
+    public function getDistanceToVicenty($latitude, $longitude): int
+    {
+        $distance = null;
+        if ($this->isInfoLoaded()) {
+            $coordinate1 = new Coordinate($this->getLatitude(), $this->getLongitude());
+            $coordinate2 = new Coordinate($latitude, $longitude);
+            
+            $calculator = new Vincenty();
+            
+            $distance = floor($calculator->getDistance($coordinate1, $coordinate2));
+        }
+        return $distance;
+    }
+    
+    public function getDistanceToHaversine($latitude, $longitude): ?int
+    {
+        $distance = null;
+        if ($this->isInfoLoaded()) {
+            $coordinate1 = new Coordinate($this->getLatitude(), $this->getLongitude());
+            $coordinate2 = new Coordinate($latitude, $longitude);
+            
+            $calculator = new Haversine();
+            
+            $distance = floor($calculator->getDistance($coordinate1, $coordinate2));
+        }
         return $distance;
     }
     
